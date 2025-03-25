@@ -13,8 +13,10 @@ class SnipTranslator:
         self.snipped_image = None
         self.snip_overlay = None
         self.rect = None
-
+        self.delay_options = []
         self.main_ui()
+        # Opening timing so that delay button is optional
+        self.selected_delay = 0
 
     # UI
     def main_ui(self):
@@ -22,16 +24,18 @@ class SnipTranslator:
         self.snip_button = ctk.CTkButton(self.root, text="Snip", font=("", 15), width=100, height=40,command=self.start_snip)
         self.snip_button.grid(row=0, column=1, sticky="n")
 
-        # Delay
-        self.delay_button = ctk.CTkButton(self.root, text="Delay", font=("", 15), width=100, height=40, command=self.delay_snip)
+        # Delay with dropdown from 1-5 seconds
+        self.delay_button = ctk.CTkOptionMenu(self.root, values=["No Delay","1", "2", "3", "4", "5"], font=("", 15), width=100, height=40, command=self.delay_snip)
         self.delay_button.grid(row=0, column=2, sticky="n")
+        # Set default value
+        self.delay_button.set("Delay")
 
         # Save
-        self.save_button = ctk.CTkButton(self.root, text="Save", font=("", 15), width=100, height=40, command=self.save_image)
+        self.save_button = ctk.CTkButton(self.root, text="Save", font=("", 15), width=100, height=40, command=self.save_snip)
         self.save_button.grid(row=0, column=3, sticky="n")
 
         # Clipboard
-        self.copy_button = ctk.CTkButton(self.root, text="Copy", font=("", 15), width=100, height=40, command=self.clipboard_image)
+        self.copy_button = ctk.CTkButton(self.root, text="Copy", font=("", 15), width=100, height=40, command=self.clipboard_snip)
         self.copy_button.grid(row=0, column=4, sticky="n")
 
         # Label to display the captured image
@@ -43,6 +47,9 @@ class SnipTranslator:
         # Hide main window so that it does not block anything
         self.root.withdraw()
 
+        # Get delay timing
+        time.sleep(self.selected_delay)
+
         # Cover screen with grey overlay
         self.snip_overlay = Toplevel()
         self.snip_overlay.attributes('-fullscreen', True, '-alpha', 0.4, '-topmost', True)
@@ -52,7 +59,6 @@ class SnipTranslator:
         # Canvas for drawing
         self.canvas = Canvas(self.snip_overlay, cursor="cross", bg="gray", highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
-        self.rect = None
 
         # Mouse click event when snipping
         self.canvas.bind("<ButtonPress-1>", self.button_press)
@@ -91,18 +97,27 @@ class SnipTranslator:
             self.save_button.configure(state="normal")
             self.copy_button.configure(state="normal")
 
+    # Add delay to snip:
+    def delay_snip(self, choice):
+        if choice == "No Delay":
+            self.selected_delay = 0
+        else:
+            self.selected_delay = int(choice)
+        self.delay_button.set("Delay")
+        # print(f"Delay: {choice}")
+
     # Save snipped image to file
-    def save_image(self):
+    def save_snip(self):
         if self.snipped_image:
             file_path = filedialog.asksaveasfilename(
-                defaultextension=".png", filetypes=[("Image files", "*.png *.jpg *.bmp")]
+                defaultextension=".png", filetypes=[("PNG File", "*.png"), ("JPEG File", "*.jpg"), ("All files", "*.*")]
             )
             if file_path:
                 self.snipped_image.save(file_path)
                 # print(f"Saved to {file_path}")
 
     # Copy image to clipboard *For windows only*
-    def clipboard_image(self):
+    def clipboard_snip(self):
         if self.snipped_image:
             output = io.BytesIO()
             self.snipped_image.save(output, format="PNG")
@@ -114,12 +129,7 @@ class SnipTranslator:
             win32clipboard.SetClipboardData(CF_PNG, data)
             win32clipboard.CloseClipboard()
 
-    # Add delay to snip
-    def delay_snip(self):
-        self.root.withdraw()
-        # 2 sec for now
-        time.sleep(2)
-        self.start_snip()
+
 
 if __name__ == "__main__":
     root = ctk.CTk()
