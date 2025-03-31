@@ -5,11 +5,14 @@ import io
 import win32clipboard
 import time
 
+# https://customtkinter.tomschimansky.com/documentation/widgets
+
 class SnipTranslator:
     def __init__(self, root):
         self.root = root
         self.root.title("SnipTranslator")
-        self.root.geometry("500x85")
+        self.root.geometry("625x85")
+        self.root.configure(fg_color="black")
         self.snipped_image = None
         self.snip_overlay = None
         self.rect = None
@@ -20,23 +23,70 @@ class SnipTranslator:
 
     # UI
     def main_ui(self):
+        # Main container frame with background
+        menu_frame = ctk.CTkFrame(self.root, height=40,corner_radius=0,fg_color="#E9ECEF")
+        menu_frame.grid(row=0, column=0, sticky="nsew", columnspan=7)
+        # Makes the menu span full width
+        self.root.grid_columnconfigure(0, weight=1)
+
+        button_config = {
+            "font" : ("", 15),
+            "width" : 100,
+            "height" : 40,
+            "corner_radius" : 0,
+            "text_color": "Black",
+            "fg_color" : "#E9ECEF",
+            "hover_color" : "#ADB5BD",
+        }
+
+        menu_config = {
+            "font": ("", 15),
+            "width": 100,
+            "height": 40,
+            "corner_radius": 0,
+            "text_color": "Black",
+            "fg_color": "#E9ECEF",
+            "button_color": "#E9ECEF",
+            "button_hover_color": "#ADB5BD",
+            "dropdown_fg_color": "Black",
+        }
+
+        checkbox_config = {
+            "font": ("", 15),
+            "width": 100,
+            "height": 40,
+            "text_color": "Black",
+            "fg_color": "#343A40",
+            "bg_color" : "#E9ECEF",
+            "hover_color": "#ADB5BD",
+            "border_color": "#6C757D"
+        }
+
         # Snip
-        self.snip_button = ctk.CTkButton(self.root, text="Snip", font=("", 15), width=100, height=40,command=self.start_snip)
-        self.snip_button.grid(row=0, column=1, sticky="n")
+        self.snip_button = ctk.CTkButton(menu_frame, text="Snip", **button_config, command=self.start_snip, )
+        self.snip_button.grid(row=0, column=1, sticky="nw")
 
         # Delay with dropdown from 1-5 seconds
-        self.delay_button = ctk.CTkOptionMenu(self.root, values=["No Delay","1", "2", "3", "4", "5"], font=("", 15), width=100, height=40, command=self.delay_snip)
-        self.delay_button.grid(row=0, column=2, sticky="n")
+        self.delay_button = ctk.CTkOptionMenu(menu_frame, values=["No Delay","1", "2", "3", "4", "5"], **menu_config, command=self.delay_snip)
+        self.delay_button.grid(row=0, column=2, sticky="nw")
         # Set default value
-        self.delay_button.set("Delay")
+        self.delay_button.set("   Delay")
 
         # Save
-        self.save_button = ctk.CTkButton(self.root, text="Save", font=("", 15), width=100, height=40, command=self.save_snip)
-        self.save_button.grid(row=0, column=3, sticky="n")
+        self.save_button = ctk.CTkButton(menu_frame, text="Save", **button_config, command=self.save_snip)
+        self.save_button.grid(row=0, column=3, sticky="nw")
 
         # Clipboard
-        self.copy_button = ctk.CTkButton(self.root, text="Copy", font=("", 15), width=100, height=40, command=self.clipboard_snip)
-        self.copy_button.grid(row=0, column=4, sticky="n")
+        self.copy_button = ctk.CTkButton(menu_frame, text="Copy", **button_config, command=self.clipboard_snip)
+        self.copy_button.grid(row=0, column=4, sticky="nw")
+
+        # Detect text in snip and make it so that we can copy text
+        self.text_button = ctk.CTkCheckBox(menu_frame, text="To Text", **checkbox_config)
+        self.text_button.grid(row=0, column=5, sticky="nw", padx=(10,0))
+
+        # Translate text in the snip
+        self.translate_button = ctk.CTkCheckBox(menu_frame, text="Translate", **checkbox_config)
+        self.translate_button.grid(row=0, column=6, sticky="nw", padx=(5,0))
 
         # Label to display the captured image
         self.label = ctk.CTkLabel(self.root, text="")
