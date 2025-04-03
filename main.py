@@ -11,7 +11,7 @@ class SnipTranslator:
     def __init__(self, root):
         self.root = root
         self.root.title("SnipTranslator")
-        self.root.geometry("625x85")
+        self.root.geometry("625x40")
         self.root.configure(fg_color="black")
         self.snipped_image = None
         self.snip_overlay = None
@@ -82,7 +82,7 @@ class SnipTranslator:
 
         # Detect text in snip and make it so that we can copy text
         self.text_button = ctk.CTkCheckBox(menu_frame, text="To Text", **checkbox_config)
-        self.text_button.grid(row=0, column=5, sticky="nw", padx=(10,0))
+        self.text_button.grid(row=0, column=5, sticky="nw", padx=10)
 
         # Translate text in the snip
         self.translate_button = ctk.CTkCheckBox(menu_frame, text="Translate", **checkbox_config)
@@ -140,7 +140,7 @@ class SnipTranslator:
 
             # Makes the window resize based on snip taken but make sure it does not become smaller than main
             snip_width, snip_height = self.snipped_image.size
-            self.root.geometry(f"{max(snip_width, 400)}x{max(snip_height, 85)}")
+            self.root.geometry(f"{max(snip_width + 60, 625)}x{max(snip_height + 60, 40)}")
             self.root.deiconify()
             self.ctk_image = ctk.CTkImage(light_image=self.snipped_image, size=(snip_width, snip_height))
             self.label.configure(image=self.ctk_image)
