@@ -4,8 +4,10 @@ from tkinter import Canvas, Toplevel, filedialog
 import io
 import win32clipboard
 import time
+import pytesseract
 
 # https://customtkinter.tomschimansky.com/documentation/widgets
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 class SnipTranslator:
     def __init__(self, root):
@@ -81,8 +83,8 @@ class SnipTranslator:
         self.copy_button.grid(row=0, column=4, sticky="nw")
 
         # Detect text in snip and make it so that we can copy text
-        self.text_button = ctk.CTkCheckBox(menu_frame, text="To Text", **checkbox_config)
-        self.text_button.grid(row=0, column=5, sticky="nw", padx=10)
+        self.text_button = ctk.CTkCheckBox(menu_frame, text="To Text", **checkbox_config, command=self.text_detector)
+        self.text_button.grid(row=0, column=5, sticky="nw", padx=(10,0))
 
         # Translate text in the snip
         self.translate_button = ctk.CTkCheckBox(menu_frame, text="Translate", **checkbox_config)
@@ -91,6 +93,13 @@ class SnipTranslator:
         # Label to display the captured image
         self.label = ctk.CTkLabel(self.root, text="")
         self.label.grid(row=1, column=0, columnspan=5, pady=10)
+
+        # Text box to OCR
+        self.text_found = ctk.CTkTextbox(self.root, width=500, height=100)
+        self.text_found.grid(row=2, column=0, columnspan=7)
+        self.text_found.configure(state="disabled")
+        # Hide text box
+        self.text_found.grid_remove()
 
     # Start snip process
     def start_snip(self):
@@ -147,6 +156,9 @@ class SnipTranslator:
             self.save_button.configure(state="normal")
             self.copy_button.configure(state="normal")
 
+            if self.text_button.get() == 1:
+                self.text_detector()
+
     # Add delay to snip:
     def delay_snip(self, choice):
         if choice == "No Delay":
@@ -178,6 +190,21 @@ class SnipTranslator:
             win32clipboard.EmptyClipboard()
             win32clipboard.SetClipboardData(CF_PNG, data)
             win32clipboard.CloseClipboard()
+
+    # Detect text in the snipped image
+    def text_detector(self):
+        if self.text_button.get() == 1:
+            self.text_found.grid()
+            if self.snipped_image:
+                text = pytesseract.image_to_string(self.snipped_image)
+                self.text_found.configure(state="normal")  # Enable editing
+                self.text_found.delete("0.0", "end")  # Clear previous text
+                self.text_found.insert("1.0", text)
+                #self.text_found.configure(state="disabled")  # Disable editing maybe
+                #print("test")
+        else:
+            self.text_found.grid_remove()
+
 
 
 
