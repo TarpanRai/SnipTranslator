@@ -227,7 +227,7 @@ class SnipTranslator:
             self.translate_textbox.configure(state="normal")
             self.translate_textbox.delete("0.0", "end")
             self.translate_textbox.insert("1.0", translated_text)
-            #self.translate_textbox.configure(state="disabled")
+            # self.translate_textbox.configure(state="disabled")
         else:
             self.translate_textbox.grid_remove()
 
