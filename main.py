@@ -87,7 +87,7 @@ class SnipTranslator:
         self.text_button.grid(row=0, column=5, sticky="nw", padx=(10,0))
 
         # Translate text in the snip
-        self.translate_button = ctk.CTkCheckBox(menu_frame, text="Translate", **checkbox_config)
+        self.translate_button = ctk.CTkCheckBox(menu_frame, text="Translate", **checkbox_config, command=self.text_translator)
         self.translate_button.grid(row=0, column=6, sticky="nw", padx=(5,0))
 
         # Label to display the captured image
@@ -100,6 +100,12 @@ class SnipTranslator:
         self.text_found.configure(state="disabled")
         # Hide text box
         self.text_found.grid_remove()
+
+        # Text box for translation
+        self.translate_textbox = ctk.CTkTextbox(self.root, width=500, height=100)
+        self.translate_textbox.grid(row=3, column=0, columnspan=7)
+        self.translate_textbox.configure(state="disabled")
+        self.translate_textbox.grid_remove()
 
     # Start snip process
     def start_snip(self):
@@ -196,15 +202,34 @@ class SnipTranslator:
         if self.text_button.get() == 1:
             self.text_found.grid()
             if self.snipped_image:
-                text = pytesseract.image_to_string(self.snipped_image)
+                text = pytesseract.image_to_string(self.snipped_image, lang='eng+jpn', config='--oem 3 --psm 6')
                 self.text_found.configure(state="normal")  # Enable editing
                 self.text_found.delete("0.0", "end")  # Clear previous text
                 self.text_found.insert("1.0", text)
                 #self.text_found.configure(state="disabled")  # Disable editing maybe
                 #print("test")
+                # Auto-translate if translation is enabled
+                if self.translate_button.get() == 1:
+                    self.text_translator()
         else:
             self.text_found.grid_remove()
 
+    # Translate the detected text
+    def text_translator(self):
+        if self.translate_button.get() == 1:
+            self.translate_textbox.grid()
+            detected_text = self.text_found.get("1.0", "end-1c")
+
+            from deep_translator import GoogleTranslator
+            translated_text = GoogleTranslator(source='auto', target='en').translate(detected_text)
+
+            # Display in translation box
+            self.translate_textbox.configure(state="normal")
+            self.translate_textbox.delete("0.0", "end")
+            self.translate_textbox.insert("1.0", translated_text)
+            #self.translate_textbox.configure(state="disabled")
+        else:
+            self.translate_textbox.grid_remove()
 
 
 
